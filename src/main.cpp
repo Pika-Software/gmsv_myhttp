@@ -1,5 +1,7 @@
 #include "main.hpp"
 #include <GarrysMod/Lua/Interface.h>
+#include <string>
+#include "lua_threading.hpp"
 
 using namespace std;
 using namespace MyHTTP;
@@ -9,14 +11,31 @@ using MyHTTP::global_context;
 #ifdef DEBUG
 int Main::Test(ILuaBase* LUA)
 {
-	cout << "HELLO WORLD!" << endl;
-	return 0;
+	int* a = new int(3);
+
+	Threading::Thread::Create(LUA, a,
+	[](void* ptr) {
+		cout << "Hello " << *(int*)ptr << endl;
+	},
+	[](GarrysMod::Lua::ILuaBase* LUA, void* ptr) {
+		cout << "now, it is end for our int :(" << endl;
+		delete (int*)ptr;
+		LUA->PushSpecial(GarrysMod::Lua::SPECIAL_GLOB);
+		LUA->GetField(-1, "print");
+		LUA->PushString("pososi");
+		LUA->Call(1, 0);
+		LUA->Pop();
+	});
+
+	return 1;
 }
 MY_LUA_FUNCTION(Test_LUA) { return global_context->Test(LUA); }
 #endif
 
 void Main::Initialize(ILuaBase* LUA)
 {
+	Threading::Core::Initialize(LUA);
+
 	LUA->PushSpecial(GarrysMod::Lua::SPECIAL_GLOB);
 		LUA->CreateTable();
 #ifdef DEBUG
