@@ -1,36 +1,56 @@
 #include "main.hpp"
 #include <GarrysMod/Lua/Interface.h>
 
-using namespace MyHTTP;
 using namespace std;
+using namespace MyHTTP;
+using GarrysMod::Lua::ILuaBase;
+using MyHTTP::global_context;
 
-void Main::Initialize(GarrysMod::Lua::ILuaBase* LUA)
+#ifdef DEBUG
+int Main::Test(ILuaBase* LUA)
 {
+	cout << "HELLO WORLD!" << endl;
+	return 0;
+}
+MY_LUA_FUNCTION(Test_LUA) { return global_context->Test(LUA); }
+#endif
 
+void Main::Initialize(ILuaBase* LUA)
+{
+	LUA->PushSpecial(GarrysMod::Lua::SPECIAL_GLOB);
+		LUA->CreateTable();
+#ifdef DEBUG
+			LUA->PushCFunction(Test_LUA);
+			LUA->SetField(-2, "Test");
+#endif
+		LUA->SetField(-2, "myhttp");
+	LUA->Pop();
 }
 
-void Main::Deinitialize(GarrysMod::Lua::ILuaBase* LUA)
+void Main::Deinitialize(ILuaBase* LUA)
 {
-
+	LUA->PushSpecial(GarrysMod::Lua::SPECIAL_GLOB);
+		LUA->PushNil();
+		LUA->SetField(-2, "myhttp");
+	LUA->Pop();
 }
 
 // GMOD ENTRY POINT
-MyHTTP::Main* global_context = nullptr;
 GMOD_MODULE_OPEN()
 {
-	MyHTTP::global_context = new Main();
-	MyHTTP::global_context->Initialize(LUA);
+	global_context = new Main();
+	global_context->Initialize(LUA);
 
 	return 0;
 }
 
 GMOD_MODULE_CLOSE()
 {
-	if (MyHTTP::global_context) {
-		MyHTTP::global_context->Deinitialize(LUA);
+	if (global_context) {
+		global_context->Deinitialize(LUA);
 
-		delete MyHTTP::global_context;
-		MyHTTP::global_context = nullptr;
+		delete global_context;
+		global_context = nullptr;
 	}
 
 	return 0;

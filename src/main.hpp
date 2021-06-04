@@ -1,6 +1,7 @@
 #ifndef MYHTTP_MAIN_HPP
 #define MYHTTP_MAIN_HPP
 #include <GarrysMod/Lua/LuaBase.h>
+#include <iostream>
 
 #define MY_LUA_FUNCTION( FUNC )											\
     static int FUNC##__Imp( GarrysMod::Lua::ILuaBase* LUA );			\
@@ -11,11 +12,12 @@
 		try {															\
 			return FUNC##__Imp(LUA);									\
 		} catch (const std::exception& ex) {							\
-			LOG() << "C++ EXCEPTION!" << std::endl;						\
+			std::cout << "C++ EXCEPTION!" << std::endl;					\
 			LUA->ThrowError(ex.what());									\
 			return 0;													\
 		}																\
 	}																	\
+	static int FUNC##__Imp( GarrysMod::Lua::ILuaBase* LUA )
 
 namespace MyHTTP {
 	class Main;
@@ -23,6 +25,10 @@ namespace MyHTTP {
 
 	class Main {
 	public:
+#ifdef DEBUG
+		int Test(GarrysMod::Lua::ILuaBase* LUA);
+#endif
+
 		void Initialize(GarrysMod::Lua::ILuaBase* LUA);
 		void Deinitialize(GarrysMod::Lua::ILuaBase* LUA);
 	};
