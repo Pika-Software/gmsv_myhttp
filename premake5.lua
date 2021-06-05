@@ -6,6 +6,7 @@ CreateWorkspace({ name = "myhttp", abi_compatible = false })
         include('third-party/mbedtls')
         include('third-party/curl')
         include('third-party/zlib')
+        include('third-party/libzip')
 
     CreateProject({ serverside = true })
         IncludeLuaShared()
