@@ -1,40 +1,42 @@
 #include "main.hpp"
 #include "lua_threading.hpp"
+#include "curl_writers.hpp"
+
 #include <GarrysMod/Lua/Interface.h>
-#include <string>
-#include <curl/curl.h>
+#include <GarrysMod/InterfacePointers.hpp>
 
 using namespace std;
 using namespace MyHTTP;
 using GarrysMod::Lua::ILuaBase;
 using MyHTTP::global_context;
 
-static size_t writetest(void* contents, size_t size, size_t nmemb, FILE* userp)
-{
-	size_t realsize = size * nmemb;
-	std::cout << realsize << endl;
-	size_t written = fwrite(contents, size, nmemb, userp);
-	return written;
-}
-
 #ifdef DEBUG
 int Main::Test(ILuaBase* LUA)
 {
 	CURL* curl;
 	CURLcode res;
-	FILE* f;
 
 	curl = curl_easy_init();
 	if (curl) {
-		f = fopen("D:\\Work\\garrysmod-server\\out.dat", "wb");
 		curl_easy_setopt(curl, CURLOPT_URL, "https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x86");
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writetest);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, f);
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+		FileHandle_t fh = CurlWriters::WriteToFile(curl, "out.dat", "MOD");
+		if (!fh) {
+			cout << "FAILED TO OPEN FILE" << endl;
+			curl_easy_cleanup(curl);
+			return 0;
+		}
+
 		res = curl_easy_perform(curl);
+		g_pFullFileSystem->Close(fh);
+		if (res != CURLE_OK) {
+			cout << "CODE ISN'T 200" << endl;
+			curl_easy_cleanup(curl);
+			return 0;
+		}
+
 		curl_easy_cleanup(curl);
-		fclose(f);
 	}
 
 	return 0;
@@ -45,6 +47,7 @@ MY_LUA_FUNCTION(Test_LUA) { return global_context->Test(LUA); }
 void Main::Initialize(ILuaBase* LUA)
 {
 	curl_global_init(CURL_GLOBAL_ALL);
+	g_pFullFileSystem = InterfacePointers::FileSystem();
 
 	Threading::Core::Initialize(LUA);
 
