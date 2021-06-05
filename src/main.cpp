@@ -1,4 +1,4 @@
-#include "main.hpp"
+﻿#include "main.hpp"
 #include "lua_threading.hpp"
 #include "curl_writers.hpp"
 
@@ -44,6 +44,17 @@ int Main::Test(ILuaBase* LUA)
 MY_LUA_FUNCTION(Test_LUA) { return global_context->Test(LUA); }
 #endif
 
+int Main::DownloadFile(ILuaBase* LUA)
+{
+	const char* url = LUA->CheckString(1);
+	const char* filename = LUA->CheckString(2);
+	const char* pathID = LUA->CheckString(3);
+	LUA->CheckType(4, GarrysMod::Lua::Type::Function);
+
+	return 0;
+}
+MY_LUA_FUNCTION(DownloadFile_LUA) { return global_context->DownloadFile(LUA); }
+
 void Main::Initialize(ILuaBase* LUA)
 {
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -54,9 +65,10 @@ void Main::Initialize(ILuaBase* LUA)
 	LUA->PushSpecial(GarrysMod::Lua::SPECIAL_GLOB);
 		LUA->CreateTable();
 #ifdef DEBUG
-			LUA->PushCFunction(Test_LUA);
-			LUA->SetField(-2, "Test");
+			DEFINE_LUAFUNC(Test);
 #endif
+
+			DEFINE_LUAFUNC(DownloadFile);
 		LUA->SetField(-2, "myhttp");
 	LUA->Pop();
 }

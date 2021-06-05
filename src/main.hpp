@@ -19,6 +19,10 @@
 	}																	\
 	static int FUNC##__Imp( GarrysMod::Lua::ILuaBase* LUA )
 
+#define DEFINE_LUAFUNC(FUNC)			\
+	LUA->PushCFunction(FUNC##_LUA);		\
+	LUA->SetField(-2, #FUNC);		
+
 namespace MyHTTP {
 	class Main;
 	static Main* global_context;
@@ -28,6 +32,8 @@ namespace MyHTTP {
 #ifdef DEBUG
 		int Test(GarrysMod::Lua::ILuaBase* LUA);
 #endif
+		
+		int DownloadFile(GarrysMod::Lua::ILuaBase* LUA);
 
 		void Initialize(GarrysMod::Lua::ILuaBase* LUA);
 		void Deinitialize(GarrysMod::Lua::ILuaBase* LUA);
