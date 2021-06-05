@@ -4,11 +4,29 @@
 
 #include <GarrysMod/Lua/Interface.h>
 #include <GarrysMod/InterfacePointers.hpp>
+#include <lua.hpp>
 
 using namespace std;
 using namespace MyHTTP;
 using GarrysMod::Lua::ILuaBase;
 using MyHTTP::global_context;
+
+int Main::ErrorHandler(lua_State* L)
+{
+	ILuaBase* LUA = L->luabase;
+	LUA->SetState(L);
+
+	const char* err = LUA->GetString(1);
+	luaL_traceback(L, L, err, 2);
+	Warning("ERROR: %s\n", LUA->GetString(-1));
+
+	return 0;
+}
+
+void Main::PushErrorHandler(ILuaBase* LUA)
+{
+	LUA->PushCFunction(ErrorHandler);
+}
 
 #ifdef DEBUG
 int Main::Test(ILuaBase* LUA)
@@ -44,6 +62,17 @@ int Main::Test(ILuaBase* LUA)
 MY_LUA_FUNCTION(Test_LUA) { return global_context->Test(LUA); }
 #endif
 
+struct DownloadFileData {
+	string url;
+	string filename;
+	string pathID;
+	int callback;
+
+	bool ok = true;
+	string err;
+	size_t size;
+};
+
 int Main::DownloadFile(ILuaBase* LUA)
 {
 	const char* url = LUA->CheckString(1);
@@ -51,7 +80,59 @@ int Main::DownloadFile(ILuaBase* LUA)
 	const char* pathID = LUA->CheckString(3);
 	LUA->CheckType(4, GarrysMod::Lua::Type::Function);
 
-	return 0;
+	LUA->Push(4);
+	int callback = LUA->ReferenceCreate();
+
+	DownloadFileData* data = new DownloadFileData{ url, filename, pathID, callback };
+	Threading::Thread::Create(LUA, data,
+	[](void* ptr) { // process
+		DownloadFileData* data = static_cast<DownloadFileData*>(ptr);
+
+		CURL* curl = curl_easy_init();
+		if (!curl) {
+			data->ok = false;
+			data->err = "failed to create http client";
+			return;
+		}
+
+		curl_easy_setopt(curl, CURLOPT_URL, data->url.c_str());
+		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+		FileHandle_t fh = CurlWriters::WriteToFile(curl, data->filename, data->pathID.c_str());
+		if (!fh) {
+			curl_easy_cleanup(curl);
+			data->ok = false;
+			data->err = "failed to open file";
+			return;
+		}
+
+		CURLcode res = curl_easy_perform(curl);
+		if (res == CURLE_OK) {
+			data->size = g_pFullFileSystem->Tell(fh);
+		} else {
+			data->ok = false;
+			data->err = "failed to make http request";
+		}
+
+		curl_easy_cleanup(curl);
+		g_pFullFileSystem->Close(fh);
+	}, 
+	[](ILuaBase* LUA, void* ptr) { // end
+		DownloadFileData* data = static_cast<DownloadFileData*>(ptr);
+
+		PushErrorHandler(LUA);
+		LUA->ReferencePush(data->callback);
+		LUA->PushBool(data->ok);
+		if (data->ok)
+			LUA->PushNil();
+		else
+			LUA->PushString(data->err.c_str());
+		LUA->PushNumber(data->size);
+		LUA->PCall(3, 0, -5);
+
+		LUA->ReferenceFree(data->callback);
+		delete data;
+	});
+	return 1;
 }
 MY_LUA_FUNCTION(DownloadFile_LUA) { return global_context->DownloadFile(LUA); }
 

@@ -6,6 +6,7 @@ CreateWorkspace({ name = "myhttp", abi_compatible = false })
         include('third-party/curl')
 
     CreateProject({ serverside = true })
+        IncludeLuaShared()
         IncludeHelpersExtended()
         IncludeSDKCommon()
         IncludeSDKTier0()

@@ -29,6 +29,9 @@ namespace MyHTTP {
 
 	class Main {
 	public:
+		static int ErrorHandler(lua_State* L);
+		static void PushErrorHandler(GarrysMod::Lua::ILuaBase* LUA);
+
 #ifdef DEBUG
 		int Test(GarrysMod::Lua::ILuaBase* LUA);
 #endif
