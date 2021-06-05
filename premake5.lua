@@ -4,6 +4,7 @@ include('third-party/garrysmod_common')
 CreateWorkspace({ name = "myhttp", abi_compatible = false })
     group "Third Party"
         include('third-party/curl')
+        include('third-party/mbedtls')
 
     CreateProject({ serverside = true })
         IncludeLuaShared()
@@ -16,5 +17,5 @@ CreateWorkspace({ name = "myhttp", abi_compatible = false })
 
         -- third-party libraries
         defines { "CURL_STATICLIB"}
-        links { 'curl-lib' }
+        links { 'curl-lib', 'mbedtls-lib' }
         sysincludedirs{ 'third-party/curl/include' }
