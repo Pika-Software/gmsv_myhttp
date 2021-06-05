@@ -805,7 +805,7 @@
 
 /* Enable appropriate header only when zlib support is enabled */
 #ifdef HAVE_LIBZ
-#define HAVE_ZLIB_H 1
+/* #undef HAVE_ZLIB_H */
 #endif
 
 #endif /* HEADER_CURL_CONFIG_SYMBIAN_H */

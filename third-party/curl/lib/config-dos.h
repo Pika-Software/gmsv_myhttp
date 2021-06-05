@@ -128,8 +128,8 @@
 
 /* USE_ZLIB on cmd-line */
 #ifdef USE_ZLIB
-  #define HAVE_ZLIB_H            1
-  #define HAVE_LIBZ              1
+/* #undef HAVE_ZLIB_H */
+/* #undef HAVE_LIBZ */
 #endif
 
 /* USE_OPENSSL on cmd-line */

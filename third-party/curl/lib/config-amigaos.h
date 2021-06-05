@@ -38,7 +38,7 @@
 #define HAVE_IOCTLSOCKET_CAMEL_FIONBIO 1
 #define HAVE_LIBCRYPTO 1
 #define HAVE_LIBSSL 1
-#define HAVE_LIBZ 1
+/* #undef HAVE_LIBZ */
 #define HAVE_LONGLONG 1
 #define HAVE_MALLOC_H 1
 #define HAVE_MEMORY_H 1
@@ -82,7 +82,7 @@
 #define HAVE_UTIME 1
 #define HAVE_UTIME_H 1
 #define HAVE_WRITABLE_ARGV 1
-#define HAVE_ZLIB_H 1
+/* #undef HAVE_ZLIB_H */
 #define HAVE_SYS_IOCTL_H 1
 
 #define NEED_MALLOC_H 1
