@@ -1,39 +1,51 @@
 #include "main.hpp"
+#include "lua_threading.hpp"
 #include <GarrysMod/Lua/Interface.h>
 #include <string>
-#include "lua_threading.hpp"
+#include <curl/curl.h>
 
 using namespace std;
 using namespace MyHTTP;
 using GarrysMod::Lua::ILuaBase;
 using MyHTTP::global_context;
 
+static size_t writetest(void* contents, size_t size, size_t nmemb, FILE* userp)
+{
+	size_t realsize = size * nmemb;
+	std::cout << realsize << endl;
+	size_t written = fwrite(contents, size, nmemb, userp);
+	return written;
+}
+
 #ifdef DEBUG
 int Main::Test(ILuaBase* LUA)
 {
-	int* a = new int(3);
+	CURL* curl;
+	CURLcode res;
+	FILE* f;
 
-	Threading::Thread::Create(LUA, a,
-	[](void* ptr) {
-		cout << "Hello " << *(int*)ptr << endl;
-	},
-	[](GarrysMod::Lua::ILuaBase* LUA, void* ptr) {
-		cout << "now, it is end for our int :(" << endl;
-		delete (int*)ptr;
-		LUA->PushSpecial(GarrysMod::Lua::SPECIAL_GLOB);
-		LUA->GetField(-1, "print");
-		LUA->PushString("pososi");
-		LUA->Call(1, 0);
-		LUA->Pop();
-	});
+	curl = curl_easy_init();
+	if (curl) {
+		f = fopen("D:\\Work\\garrysmod-server\\out.dat", "wb");
+		curl_easy_setopt(curl, CURLOPT_URL, "https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x86");
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writetest);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, f);
+		curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+		res = curl_easy_perform(curl);
+		curl_easy_cleanup(curl);
+		fclose(f);
+	}
 
-	return 1;
+	return 0;
 }
 MY_LUA_FUNCTION(Test_LUA) { return global_context->Test(LUA); }
 #endif
 
 void Main::Initialize(ILuaBase* LUA)
 {
+	curl_global_init(CURL_GLOBAL_ALL);
+
 	Threading::Core::Initialize(LUA);
 
 	LUA->PushSpecial(GarrysMod::Lua::SPECIAL_GLOB);
@@ -48,6 +60,8 @@ void Main::Initialize(ILuaBase* LUA)
 
 void Main::Deinitialize(ILuaBase* LUA)
 {
+	curl_global_cleanup();
+
 	LUA->PushSpecial(GarrysMod::Lua::SPECIAL_GLOB);
 		LUA->PushNil();
 		LUA->SetField(-2, "myhttp");
