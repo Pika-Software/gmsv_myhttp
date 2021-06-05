@@ -5,11 +5,6 @@ project "curl-lib"
 	defines     { "BUILDING_LIBCURL", "CURL_STATICLIB", "HTTP_ONLY" }
 	warnings    "off"
 
-	if not _OPTIONS["no-zlib"] then
-		defines     { 'USE_ZLIB' }
-		includedirs { '../zlib' }
-	end
-
 	files
 	{
 		"**.h",

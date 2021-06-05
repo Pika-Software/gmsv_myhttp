@@ -5,8 +5,6 @@ CreateWorkspace({ name = "myhttp", abi_compatible = false })
     group "Third Party"
         include('third-party/mbedtls')
         include('third-party/curl')
-        include('third-party/zlib')
-        include('third-party/libzip')
 
     CreateProject({ serverside = true })
         IncludeLuaShared()
@@ -18,9 +16,9 @@ CreateWorkspace({ name = "myhttp", abi_compatible = false })
         files {"src/*.cpp", "src/*.hpp"}
 
         -- third-party libraries
-        defines { "CURL_STATICLIB"}
-        links { 'curl-lib', "zip-lib", "zlib-lib" }
-        sysincludedirs{ 'third-party/curl/include', 'third-party/zlib', 'third-party/libzip' }
+        defines { "CURL_STATICLIB" }
+        links { 'curl-lib' }
+        sysincludedirs{ 'third-party/curl/include' }
 
         filter { "system:not windows", "system:not macosx" }
             links   { "mbedtls-lib" }
