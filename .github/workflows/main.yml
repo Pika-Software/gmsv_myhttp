@@ -1,0 +1,100 @@
+name: Build
+on: [push, pull_request]
+
+jobs:
+  linux64:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Configure
+        run: ./configure
+        
+      - name: Build
+        run: |
+          cd projects/linux/gmake
+          make config=release_x86_64
+      
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: Linux64-build
+          path: projects/linux/gmake/x86_64/Release/gmsv_myhttp_linux64.dll
+          
+  linux32:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          
+      - name: Install x32 libs
+        run: sudo apt install gcc-multilib g++-multilib
+
+      - name: Configure
+        run: ./configure
+        
+      - name: Build
+        run: |
+          cd projects/linux/gmake
+          make config=release_x86
+      
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: Linux32-Build
+          path: projects/linux/gmake/x86/Release/gmsv_myhttp_linux.dll
+          
+  win64:
+    runs-on: windows-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+      
+      - name: Configure
+        run: ./configure.bat
+        
+      - name: Build
+        run: |
+          cd projects/windows/vs2019
+          msbuild.exe myhttp.sln -property:Configuration=Release -property:Platform=x64
+
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: Windows64-Build
+          path: projects/windows/vs2019/x86_64/Release/gmsv_myhttp_win64.dll
+          
+  win32:
+    runs-on: windows-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+      
+      - name: Configure
+        run: ./configure.bat
+        
+      - name: Build
+        run: |
+          cd projects/windows/vs2019
+          msbuild.exe myhttp.sln -property:Configuration=Release -property:Platform=Win32
+
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: Windows32-Build
+          path: projects/windows/vs2019/x86/Release/gmsv_myhttp_win32.dll
