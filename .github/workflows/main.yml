@@ -16,16 +16,27 @@ jobs:
       - name: Configure
         run: ./configure
         
-      - name: Build
+      - name: Build Release
         run: |
           cd projects/linux/gmake
           make config=release_x86_64
+          
+      - name: Build Debug
+        run: |
+          cd projects/linux/gmake
+          make config=debug_x86_64
       
-      - name: Upload
+      - name: Upload Release
         uses: actions/upload-artifact@v2
         with:
-          name: Linux64-build
+          name: Release
           path: projects/linux/gmake/x86_64/Release/${{env.MODULE_PREFIX}}_${{env.MODULE_NAME}}_linux64.dll
+      
+      - name: Upload Debug
+        uses: actions/upload-artifact@v2
+        with:
+          name: Debug
+          path: projects/linux/gmake/x86_64/Debug/${{env.MODULE_PREFIX}}_${{env.MODULE_NAME}}_linux64.dll
           
   linux32:
     runs-on: ubuntu-latest
@@ -40,17 +51,28 @@ jobs:
 
       - name: Configure
         run: ./configure
-        
-      - name: Build
+          
+      - name: Build Release
         run: |
           cd projects/linux/gmake
           make config=release_x86
+          
+      - name: Build Debug
+        run: |
+          cd projects/linux/gmake
+          make config=debug_x86
       
-      - name: Upload
+      - name: Upload Release
         uses: actions/upload-artifact@v2
         with:
-          name: Linux32-Build
+          name: Release
           path: projects/linux/gmake/x86/Release/${{env.MODULE_PREFIX}}_${{env.MODULE_NAME}}_linux.dll
+      
+      - name: Upload Debug
+        uses: actions/upload-artifact@v2
+        with:
+          name: Debug
+          path: projects/linux/gmake/x86/Debug/${{env.MODULE_PREFIX}}_${{env.MODULE_NAME}}_linux.dll
           
   win64:
     runs-on: windows-latest
@@ -66,16 +88,27 @@ jobs:
       - name: Configure
         run: ./configure.bat
         
-      - name: Build
+      - name: Build Release
         run: |
           cd projects/windows/vs2019
           msbuild.exe ${{env.MODULE_NAME}}.sln -property:Configuration=Release -property:Platform=x64
-
-      - name: Upload
+          
+      - name: Build Debug
+        run: |
+          cd projects/windows/vs2019
+          msbuild.exe ${{env.MODULE_NAME}}.sln -property:Configuration=Debug -property:Platform=x64
+          
+      - name: Upload Release
         uses: actions/upload-artifact@v2
         with:
-          name: Windows64-Build
+          name: Release
           path: projects/windows/vs2019/x86_64/Release/${{env.MODULE_PREFIX}}_${{env.MODULE_NAME}}_win64.dll
+      
+      - name: Upload Debug
+        uses: actions/upload-artifact@v2
+        with:
+          name: Debug
+          path: projects/windows/vs2019/x86_64/Debug/${{env.MODULE_PREFIX}}_${{env.MODULE_NAME}}_win64.dll
           
   win32:
     runs-on: windows-latest
@@ -91,13 +124,24 @@ jobs:
       - name: Configure
         run: ./configure.bat
         
-      - name: Build
+      - name: Build Release
         run: |
           cd projects/windows/vs2019
           msbuild.exe ${{env.MODULE_NAME}}.sln -property:Configuration=Release -property:Platform=Win32
-
-      - name: Upload
+          
+      - name: Build Debug
+        run: |
+          cd projects/windows/vs2019
+          msbuild.exe ${{env.MODULE_NAME}}.sln -property:Configuration=Debug -property:Platform=Win32
+          
+      - name: Upload Release
         uses: actions/upload-artifact@v2
         with:
-          name: Windows32-Build
+          name: Release
           path: projects/windows/vs2019/x86/Release/${{env.MODULE_PREFIX}}_${{env.MODULE_NAME}}_win32.dll
+      
+      - name: Upload Debug
+        uses: actions/upload-artifact@v2
+        with:
+          name: Debug
+          path: projects/windows/vs2019/x86/Debug/${{env.MODULE_PREFIX}}_${{env.MODULE_NAME}}_win32.dll
